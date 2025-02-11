@@ -22,6 +22,28 @@ public class VehicleGrpcService(IVehicleRepository repository) : Vehicle.Vehicle
         };
     }
 
+    public override async Task<VehicleResponse> CreateVehicle(CreateVehicleRequest request, ServerCallContext context)
+    {
+        var vehicle = new Data.Entities.VehicleEntity
+        {
+            LicensePlate = request.LicensePlate,
+            Make = request.Make,
+            Model = request.Model,
+            Year = request.Year,
+            Vin = request.Vin
+        };
+        var id = await repository.CreateAsync(vehicle);
+        return new VehicleResponse()
+        {
+            Id = id,
+            Make = vehicle.Make,
+            Model = vehicle.Model,
+            Year = vehicle.Year,
+            Vin = vehicle.Vin,
+            LicensePlate = vehicle.LicensePlate
+        };
+    }
+
     public override async Task<VehicleListResponse> ListVehicles(Empty request, ServerCallContext context)
     {
         var vehicles = await repository.GetAllAsync();

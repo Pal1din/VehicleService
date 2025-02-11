@@ -1,3 +1,4 @@
+using Grpc.Core;
 using Microsoft.AspNetCore.Mvc;
 using Vehicle;
 
@@ -7,17 +8,43 @@ namespace VehicleService.API.Controllers;
 [ApiController]
 public class VehicleController(Vehicle.VehicleService.VehicleServiceClient grpcClient) : ControllerBase
 {
+    [HttpGet]
+    public async Task<IActionResult> GetVehicles()
+    {
+        return await SafelyFunction(async () => await grpcClient.ListVehiclesAsync(new Empty()));
+    }
+    
     [HttpGet("{id}")]
     public async Task<IActionResult> GetVehicle(int id)
     {
-        var response = await grpcClient.GetVehicleAsync(new VehicleRequest { Id = id });
-        return Ok(response);
+        return await SafelyFunction(async () => await grpcClient.GetVehicleAsync(new VehicleRequest { Id = id }));
     }
 
     [HttpPost]
     public async Task<IActionResult> CreateVehicle([FromBody] CreateVehicleRequest request)
     {
-        var response = await grpcClient.CreateVehicleAsync(request);
-        return Ok(response);
+        return await SafelyFunction(async () => await grpcClient.CreateVehicleAsync(request));
+    }
+
+    private async Task<IActionResult> SafelyFunction<TResult>(Func<Task<TResult>> func)
+    {
+        try
+        {
+            var response = await func();
+            return Ok(response);
+        }
+        catch (RpcException e)
+        {
+            return e.StatusCode switch
+            {
+                global::Grpc.Core.StatusCode.NotFound => NotFound(e.Message),
+                _ => StatusCode(500, e.Message),
+            };
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
     }
 }

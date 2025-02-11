@@ -8,11 +8,12 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="FluentMigrator.Runner.Core" Version="6.2.0" />
+        <PackageReference Include="FluentMigrator.Runner.Postgres" Version="6.2.0" />
         <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0"/>
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\VehicleService.Domain\VehicleService.Domain.csproj" />
       <ProjectReference Include="..\VehicleService.Grpc\VehicleService.Grpc.csproj" />
     </ItemGroup>
 

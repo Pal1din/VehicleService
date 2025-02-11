@@ -1,8 +1,6 @@
-using System.ComponentModel.DataAnnotations.Schema;
+namespace VehicleService.Data.Entities;
 
-namespace VehicleService.Data;
-
-public class Vehicle
+public class VehicleEntity: BaseEntity
 {
     public int Id { get; set; }
     public string Make { get; set; }

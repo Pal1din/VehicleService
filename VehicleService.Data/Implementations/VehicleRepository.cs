@@ -1,9 +1,10 @@
 using Dapper;
+using VehicleService.Data.Entities;
 using VehicleService.Data.Interfaces;
 
 namespace VehicleService.Data.Implementations;
 
-public class VehicleRepository: IVehicleRepository
+public class VehicleRepository : IVehicleRepository
 {
     private readonly DatabaseConnectionFactory _connectionFactory;
 
@@ -12,39 +13,44 @@ public class VehicleRepository: IVehicleRepository
         _connectionFactory = connectionFactory;
     }
 
-    public async Task<IEnumerable<Vehicle>> GetAllAsync()
+    public async Task<IEnumerable<VehicleEntity>> GetAllAsync()
     {
         using var connection = _connectionFactory.CreateConnection();
-        return await connection.QueryAsync<Vehicle>("SELECT * FROM vehicles");
+        return await connection.QueryAsync<VehicleEntity>("SELECT id, make, model, year, vin, license_plate as LicensePlate FROM vehicles");
     }
 
-    public async Task<Vehicle?> GetByIdAsync(int id)
+    public async Task<VehicleEntity?> GetByIdAsync(int id)
     {
         using var connection = _connectionFactory.CreateConnection();
-        return await connection.QuerySingleOrDefaultAsync<Vehicle>(
-            "SELECT id, make, model, year, vin, license_plate as LicensePlate FROM vehicles WHERE id = @Id", new { Id = id });
+        return await connection.QuerySingleOrDefaultAsync<VehicleEntity>(
+            "SELECT id, make, model, year, vin, license_plate as LicensePlate FROM vehicles WHERE id = @Id",
+            new { Id = id });
     }
 
-    public async Task<int> CreateAsync(Vehicle vehicle)
+    public async Task<int> CreateAsync(VehicleEntity vehicleEntity)
     {
         using var connection = _connectionFactory.CreateConnection();
-        var query = @"
-            INSERT INTO vehicles (make, model, year, vin, license_plate)
-            VALUES (@Make, @Model, @Year, @Vin, @LicensePlate)
-            RETURNING id;
-        ";
-        return await connection.ExecuteScalarAsync<int>(query, vehicle);
+        var query = """
+                    
+                                INSERT INTO vehicles (make, model, year, vin, license_plate)
+                                VALUES (@Make, @Model, @Year, @Vin, @LicensePlate)
+                                RETURNING id;
+                            
+                    """;
+        return await connection.ExecuteScalarAsync<int>(query, vehicleEntity);
     }
 
-    public async Task<bool> UpdateAsync(Vehicle vehicle)
+    public async Task<bool> UpdateAsync(VehicleEntity vehicleEntity)
     {
         using var connection = _connectionFactory.CreateConnection();
-        var query = @"
-            UPDATE vehicles 
-            SET make = @Make, model = @Model, year = @Year, vin = @Vin, license_plate = @LicensePlate
-            WHERE id = @Id;
-        ";
-        return await connection.ExecuteAsync(query, vehicle) > 0;
+        var query = """
+                    
+                                UPDATE vehicles 
+                                SET make = @Make, model = @Model, year = @Year, vin = @Vin, license_plate = @LicensePlate
+                                WHERE id = @Id;
+                            
+                    """;
+        return await connection.ExecuteAsync(query, vehicleEntity) > 0;
     }
 
     public async Task<bool> DeleteAsync(int id)
