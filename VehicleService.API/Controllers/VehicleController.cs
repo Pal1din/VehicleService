@@ -1,4 +1,5 @@
 using Grpc.Core;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Vehicle;
 
@@ -6,6 +7,7 @@ namespace VehicleService.API.Controllers;
 
 [Route("api/vehicles")]
 [ApiController]
+[Authorize]
 public class VehicleController(Vehicle.VehicleService.VehicleServiceClient grpcClient) : ControllerBase
 {
     [HttpGet]

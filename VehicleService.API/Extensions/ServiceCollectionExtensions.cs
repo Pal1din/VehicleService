@@ -62,4 +62,17 @@ public static class ServiceCollectionExtensions
     {
         return builder;
     }
+
+    public static WebApplicationBuilder AddAuthService(this WebApplicationBuilder builder)
+    {
+        builder.Services.AddAuthentication("Bearer")
+            .AddJwtBearer("Bearer", options =>
+            {
+                options.Authority = "http://localhost:5252";
+                options.Audience = "full.access";
+                options.RequireHttpsMetadata = false;
+            });
+        builder.Services.AddAuthorization();
+        return builder;
+    }
 }

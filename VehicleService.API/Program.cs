@@ -12,15 +12,16 @@ builder
     .AddSwagger()
     .AddMigrator()
     .AddApplicationServices()
-    .AddData();
+    .AddData()
+    .AddAuthService();
 
 var app = builder.Build();
-
+app.UseRouting();
+app.UseAuthentication();
+app.UseAuthorization();
 app.UseSwagger();
 app.UseSwaggerUI();
-app.UseHttpsRedirection();
-app.UseAuthorization();
-app.UseRouting();
+app.UseHttpsRedirection(); 
 app.MapControllers();
 app.MapGrpcService<VehicleGrpcService>();
 app.Migrate();
