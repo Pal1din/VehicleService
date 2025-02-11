@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using Grpc.Net.Client;
 using VehicleService.Data;
 using VehicleService.Data.Implementations;
@@ -10,12 +11,16 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 builder.Services.AddGrpc();
+builder.Services.AddGrpcClient<Vehicle.VehicleService.VehicleServiceClient>((provider, options) =>
+{
+    var configuration = provider.GetRequiredService<IConfiguration>();
+    var url = configuration.GetValue<string>("ASPNETCORE_URLS")!.Split(";")[0];
+    options.Address = new Uri("url");
+});
 
 // Регистрация Dapper
 builder.Services.AddSingleton<DatabaseConnectionFactory>();
 builder.Services.AddScoped<IVehicleRepository, VehicleRepository>();
-builder.Services.AddScoped<Vehicle.VehicleService.VehicleServiceClient>(_ => 
-    new Vehicle.VehicleService.VehicleServiceClient(GrpcChannel.ForAddress("https://localhost:7165")));
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();

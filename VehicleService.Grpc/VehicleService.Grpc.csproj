@@ -16,4 +16,9 @@
       <ProjectReference Include="..\VehicleService.Domain\VehicleService.Domain.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+        <Protobuf Include="Protos\*.proto" GrpcServices="Both" />
+    </ItemGroup>
+
+
 </Project>
