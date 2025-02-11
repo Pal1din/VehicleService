@@ -1,0 +1,48 @@
+syntax = "proto3";
+
+option csharp_namespace = "Vehicle";
+package vehicle;
+
+service VehicleService {
+  rpc GetVehicle (VehicleRequest) returns (VehicleResponse);
+  rpc ListVehicles (Empty) returns (VehicleListResponse);
+  rpc CreateVehicle (CreateVehicleRequest) returns (VehicleResponse);
+  rpc UpdateVehicle (UpdateVehicleRequest) returns (VehicleResponse);
+  rpc DeleteVehicle (VehicleRequest) returns (Empty);
+}
+
+message VehicleRequest {
+  int32 id = 1;
+}
+
+message CreateVehicleRequest {
+  string make = 1;
+  string model = 2;
+  int32 year = 3;
+  string vin = 4;
+  string license_plate = 5;
+}
+
+message UpdateVehicleRequest {
+  int32 id = 1;
+  string make = 2;
+  string model = 3;
+  int32 year = 4;
+  string vin = 5;
+  string license_plate = 6;
+}
+
+message VehicleResponse {
+  int32 id = 1;
+  string make = 2;
+  string model = 3;
+  int32 year = 4;
+  string vin = 5;
+  string license_plate = 6;
+}
+
+message VehicleListResponse {
+  repeated VehicleResponse vehicles = 1;
+}
+
+message Empty {}

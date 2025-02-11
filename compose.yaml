@@ -1,0 +1,6 @@
+﻿services:
+  vehicle-service-api:
+    image: vehicle-service.api
+    build:
+      context: .
+      dockerfile: VehicleService.API/Dockerfile
