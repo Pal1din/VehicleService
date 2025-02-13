@@ -1,5 +1,6 @@
 using Grpc.Core;
 using Vehicle;
+using VehicleService.Data.Entities;
 using VehicleService.Data.Interfaces;
 
 namespace VehicleService.Grpc.Services;
@@ -58,5 +59,36 @@ public class VehicleGrpcService(IVehicleRepository repository) : Vehicle.Vehicle
             LicensePlate = v.LicensePlate
         }));
         return response;
+    }
+
+    public override async Task<Empty> DeleteVehicle(VehicleRequest request, ServerCallContext context)
+    {
+        var success = await repository.DeleteAsync(request.Id);
+        if (!success) throw new RpcException(new Status(StatusCode.NotFound, "Vehicle not found"));
+        return new Empty();
+    }
+
+    public override async Task<VehicleResponse> UpdateVehicle(UpdateVehicleRequest request, ServerCallContext context)
+    {
+        var vehicle = new VehicleEntity
+        {
+            Id = request.Id,
+            LicensePlate = request.LicensePlate,
+            Make = request.Make,
+            Model = request.Model,
+            Year = request.Year,
+            Vin = request.Vin,
+        };
+        var success = await repository.UpdateAsync(vehicle);
+        if(!success) throw new RpcException(new Status(StatusCode.NotFound, "Vehicle not found"));
+        return new VehicleResponse
+        {
+            Id = vehicle.Id,
+            Make = vehicle.Make,
+            Model = vehicle.Model,
+            Year = vehicle.Year,
+            Vin = vehicle.Vin,
+            LicensePlate = vehicle.LicensePlate
+        };
     }
 }

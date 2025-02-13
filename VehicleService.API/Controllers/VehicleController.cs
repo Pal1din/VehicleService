@@ -31,11 +31,29 @@ public class VehicleController(Vehicle.VehicleService.VehicleServiceClient grpcC
         return await SafelyFunction(async () => await grpcClient.CreateVehicleAsync(request));
     }
 
+    [HttpDelete]
+    [Authorize(Policy = "write")]
+    public async Task<IActionResult> DeleteVehicle([FromBody]int id)
+    {
+        return await SafelyFunction(async () => await grpcClient.DeleteVehicleAsync(new VehicleRequest { Id = id }));
+    }
+
+    [HttpPut]
+    [Authorize(Policy = "write")]
+    public async Task<IActionResult> UpdateVehicle([FromBody] UpdateVehicleRequest request)
+    {
+        return await SafelyFunction(async () => await grpcClient.UpdateVehicleAsync(request));
+    }
+
     private async Task<IActionResult> SafelyFunction<TResult>(Func<Task<TResult>> func)
     {
         try
         {
             var response = await func();
+            if (response?.GetType() == typeof(Empty))
+            {
+                return Ok("Success");
+            }
             return Ok(response);
         }
         catch (RpcException e)
