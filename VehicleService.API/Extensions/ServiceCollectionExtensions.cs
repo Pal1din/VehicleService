@@ -1,5 +1,6 @@
 using FluentMigrator.Runner;
 using Microsoft.OpenApi.Models;
+using StackExchange.Redis;
 using VehicleService.Data;
 using VehicleService.Data.Implementations;
 using VehicleService.Data.Interfaces;
@@ -66,6 +67,8 @@ public static class ServiceCollectionExtensions
     {
         builder.Services.AddSingleton<DatabaseConnectionFactory>();
         builder.Services.AddScoped<IVehicleRepository, VehicleRepository>();
+        builder.Services.AddSingleton<IConnectionMultiplexer>(ConnectionMultiplexer.Connect(builder.Configuration.GetConnectionString("Redis")!));
+        builder.Services.AddSingleton<RedisCacheService>();
         return builder;
     }
     public static WebApplicationBuilder AddApplicationServices(this WebApplicationBuilder builder)
