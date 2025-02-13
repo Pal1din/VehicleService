@@ -1,11 +1,18 @@
+using Serilog;
 using VehicleService.API;
 using VehicleService.API.Extensions;
 using VehicleService.Grpc;
 using VehicleService.Grpc.Services;
 
 var builder = WebApplication.CreateBuilder(args);
-var authenticationSettings = builder.Configuration.GetSection("IdentityServer").Get<AuthenticationSettings>();
-var swaggerUiSettings = builder.Configuration.GetSection("SwaggerUi").Get<SwaggerUISettings>();
+
+Log.Logger = new LoggerConfiguration()
+    .ReadFrom.Configuration(builder.Configuration)
+    .CreateBootstrapLogger();
+builder.Host.UseSerilog();
+
+GetSettings(builder, out var swaggerUiSettings, out var authenticationSettings);
+
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder
@@ -18,6 +25,7 @@ builder
     .AddAuthService(authenticationSettings!);
 
 var app = builder.Build();
+app.UseSerilogRequestLogging();
 app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
@@ -37,3 +45,11 @@ app.MapGrpcService<VehicleGrpcService>();
 app.Migrate();
 
 app.Run();
+return;
+
+void GetSettings(WebApplicationBuilder webApplicationBuilder,
+    out SwaggerUISettings? swaggerUiSettings1, out AuthenticationSettings authenticationSettings1)
+{
+    authenticationSettings1 = webApplicationBuilder.Configuration.GetSection("IdentityServer").Get<AuthenticationSettings>();
+    swaggerUiSettings1 = webApplicationBuilder.Configuration.GetSection("SwaggerUi").Get<SwaggerUISettings>();
+}
