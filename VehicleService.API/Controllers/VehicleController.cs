@@ -11,18 +11,21 @@ namespace VehicleService.API.Controllers;
 public class VehicleController(Vehicle.VehicleService.VehicleServiceClient grpcClient) : ControllerBase
 {
     [HttpGet]
+    [Authorize(Policy = "read")]
     public async Task<IActionResult> GetVehicles()
     {
         return await SafelyFunction(async () => await grpcClient.ListVehiclesAsync(new Empty()));
     }
     
     [HttpGet("{id}")]
+    [Authorize(Policy = "read")]
     public async Task<IActionResult> GetVehicle(int id)
     {
         return await SafelyFunction(async () => await grpcClient.GetVehicleAsync(new VehicleRequest { Id = id }));
     }
 
     [HttpPost]
+    [Authorize(Policy = "write")]
     public async Task<IActionResult> CreateVehicle([FromBody] CreateVehicleRequest request)
     {
         return await SafelyFunction(async () => await grpcClient.CreateVehicleAsync(request));

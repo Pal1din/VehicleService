@@ -27,7 +27,8 @@ public static class ServiceCollectionExtensions
                         TokenUrl = new Uri("https://localhost:7138/connect/token"),
                         Scopes = new Dictionary<string, string>
                         {
-                            {"read", "Доступ на чтение"}
+                            {"read", "Доступ на чтение"},
+                            {"write", "Доступ на запись"}
                         }
                     }
                 }
@@ -42,7 +43,7 @@ public static class ServiceCollectionExtensions
                             Type = ReferenceType.SecurityScheme,
                             Id = "oauth2"
                         }
-                    }, ["read"]
+                    }, ["read", "write"]
                 }
             });
 
@@ -81,7 +82,11 @@ public static class ServiceCollectionExtensions
                 options.Audience = "vehicle.resource";
                 options.RequireHttpsMetadata = false;
             });
-        builder.Services.AddAuthorization();
+        builder.Services.AddAuthorization(options =>
+        {
+            options.AddPolicy("read", policyBuilder => policyBuilder.RequireClaim("scope", "read"));
+            options.AddPolicy("write", policyBuilder => policyBuilder.RequireClaim("scope", "write"));
+        });
         return builder;
     }
 }
