@@ -1,9 +1,11 @@
+using VehicleService.API;
 using VehicleService.API.Extensions;
 using VehicleService.Grpc;
 using VehicleService.Grpc.Services;
 
 var builder = WebApplication.CreateBuilder(args);
-
+var authenticationSettings = builder.Configuration.GetSection("IdentityServer").Get<AuthenticationSettings>();
+var swaggerUiSettings = builder.Configuration.GetSection("SwaggerUi").Get<SwaggerUISettings>();
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder
@@ -13,7 +15,7 @@ builder
     .AddMigrator()
     .AddApplicationServices()
     .AddData()
-    .AddAuthService();
+    .AddAuthService(authenticationSettings!);
 
 var app = builder.Build();
 app.UseRouting();
@@ -22,9 +24,9 @@ app.UseAuthorization();
 app.UseSwagger();
 app.UseSwaggerUI(c =>
 {
-    c.SwaggerEndpoint("/swagger/v1/swagger.json", "VehicleService.API");
-    c.OAuthClientId("vehicle-service");
-    c.OAuthClientSecret("secret");
+    c.SwaggerEndpoint(swaggerUiSettings.Url, swaggerUiSettings.Name);
+    c.OAuthClientId(swaggerUiSettings.ClientId);
+    c.OAuthClientSecret(swaggerUiSettings.ClientSecret);
     c.OAuthUsePkce();
 });
 

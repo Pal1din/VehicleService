@@ -73,22 +73,25 @@ public static class ServiceCollectionExtensions
         return builder;
     }
 
-    public static WebApplicationBuilder AddAuthService(this WebApplicationBuilder builder)
+    internal static WebApplicationBuilder AddAuthService(this WebApplicationBuilder builder, AuthenticationSettings authSettings)
     {
-        builder.Services.AddAuthentication("Bearer")
-            .AddJwtBearer("Bearer", options =>
+        builder.Services.AddAuthentication(authSettings.TokenOptions.Scheme)
+            .AddJwtBearer(authSettings.TokenOptions.Scheme, options =>
             {
-                options.Authority = "https://localhost:7138";
-                options.Audience = "vehicle.resource";
-                options.RequireHttpsMetadata = false;
+                options.Authority = authSettings.TokenOptions.Authority;
+                options.Audience = authSettings.TokenOptions.Audience;
+                options.RequireHttpsMetadata = authSettings.TokenOptions.RequireHttpsMetadata;
             });
         builder.Services.AddAuthorization(options =>
         {
-            options.AddPolicy("CanRead", policy => policy.RequireAssertion(context => 
-                context.User.HasClaim("scope", "read") && context.User.HasClaim("permission", "read")));
+            foreach (var policyOptions in authSettings.Policies)
+            {
+                options.AddPolicy(policyOptions.Name, policy => policy.RequireAssertion(context => 
+                    policyOptions.Claims.TrueForAll(c => context.User.HasClaim(c.Type, c.Value))));
+            }
             
-            options.AddPolicy("CanWrite", policy => policy.RequireAssertion(context => 
-                context.User.HasClaim("scope", "write") && context.User.HasClaim("permission", "write")));
+            // options.AddPolicy("CanWrite", policy => policy.RequireAssertion(context => 
+            //     context.User.HasClaim("scope", "write") && context.User.HasClaim("permission", "write")));
         });
         return builder;
     }
