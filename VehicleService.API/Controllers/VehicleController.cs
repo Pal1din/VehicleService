@@ -11,35 +11,35 @@ namespace VehicleService.API.Controllers;
 public class VehicleController(Vehicle.VehicleService.VehicleServiceClient grpcClient) : ControllerBase
 {
     [HttpGet]
-    [Authorize(Policy = "read")]
+    [Authorize(Policy = "CanRead")]
     public async Task<IActionResult> GetVehicles()
     {
         return await SafelyFunction(async () => await grpcClient.ListVehiclesAsync(new Empty()));
     }
     
     [HttpGet("{id}")]
-    [Authorize(Policy = "read")]
+    [Authorize(Policy = "CanRead")]
     public async Task<IActionResult> GetVehicle(int id)
     {
         return await SafelyFunction(async () => await grpcClient.GetVehicleAsync(new VehicleRequest { Id = id }));
     }
 
     [HttpPost]
-    [Authorize(Policy = "write")]
+    [Authorize(Policy = "CanWrite")]
     public async Task<IActionResult> CreateVehicle([FromBody] CreateVehicleRequest request)
     {
         return await SafelyFunction(async () => await grpcClient.CreateVehicleAsync(request));
     }
 
     [HttpDelete]
-    [Authorize(Policy = "write")]
+    [Authorize(Policy = "CanWrite")]
     public async Task<IActionResult> DeleteVehicle([FromBody]int id)
     {
         return await SafelyFunction(async () => await grpcClient.DeleteVehicleAsync(new VehicleRequest { Id = id }));
     }
 
     [HttpPut]
-    [Authorize(Policy = "write")]
+    [Authorize(Policy = "CanWrite")]
     public async Task<IActionResult> UpdateVehicle([FromBody] UpdateVehicleRequest request)
     {
         return await SafelyFunction(async () => await grpcClient.UpdateVehicleAsync(request));

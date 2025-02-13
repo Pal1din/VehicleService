@@ -84,8 +84,11 @@ public static class ServiceCollectionExtensions
             });
         builder.Services.AddAuthorization(options =>
         {
-            options.AddPolicy("read", policyBuilder => policyBuilder.RequireClaim("scope", "read"));
-            options.AddPolicy("write", policyBuilder => policyBuilder.RequireClaim("scope", "write"));
+            options.AddPolicy("CanRead", policy => policy.RequireAssertion(context => 
+                context.User.HasClaim("scope", "read") && context.User.HasClaim("permission", "read")));
+            
+            options.AddPolicy("CanWrite", policy => policy.RequireAssertion(context => 
+                context.User.HasClaim("scope", "write") && context.User.HasClaim("permission", "write")));
         });
         return builder;
     }
