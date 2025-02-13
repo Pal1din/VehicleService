@@ -8,7 +8,8 @@ FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 COPY ["VehicleService.API/VehicleService.API.csproj", "VehicleService.API/"]
-COPY ["VehicleService.Domain/VehicleService.Domain.csproj", "VehicleService.Domain/"]
+COPY ["VehicleService.Grpc/VehicleService.Grpc.csproj", "VehicleService.Grpc/"]
+COPY ["VehicleService.Data/VehicleService.Data.csproj", "VehicleService.Data/"]
 RUN dotnet restore "VehicleService.API/VehicleService.API.csproj"
 COPY . .
 WORKDIR "/src/VehicleService.API"
