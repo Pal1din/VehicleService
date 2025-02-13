@@ -14,16 +14,25 @@ public static class ServiceCollectionExtensions
         builder.Services.AddSwaggerGen(o =>
         {
             o.SwaggerDoc("v1", new OpenApiInfo { Title = "VehicleService", Version = "v1" });
-            o.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+
+            o.AddSecurityDefinition("oauth2", new OpenApiSecurityScheme
             {
-                In = ParameterLocation.Header,
-                Description = "Please insert JWT without Bearer into field",
-                Name = "Authorization",
-                Type = SecuritySchemeType.Http,
-                Scheme = "Bearer",
-                BearerFormat = "JWT",
+                Type = SecuritySchemeType.OAuth2,
+                Scheme = "oauth2",
+                Flows = new OpenApiOAuthFlows
+                {
+                    AuthorizationCode = new OpenApiOAuthFlow
+                    {
+                        AuthorizationUrl = new Uri("https://localhost:7138/connect/authorize"),
+                        TokenUrl = new Uri("https://localhost:7138/connect/token"),
+                        Scopes = new Dictionary<string, string>
+                        {
+                            {"read", "Доступ на чтение"}
+                        }
+                    }
+                }
             });
-            o.AddSecurityRequirement(new OpenApiSecurityRequirement
+            o.AddSecurityRequirement(new OpenApiSecurityRequirement()
             {
                 {
                     new OpenApiSecurityScheme
@@ -31,12 +40,12 @@ public static class ServiceCollectionExtensions
                         Reference = new OpenApiReference
                         {
                             Type = ReferenceType.SecurityScheme,
-                            Id = "Bearer"
+                            Id = "oauth2"
                         }
-                    },
-                    []
+                    }, ["read"]
                 }
             });
+
         });
         return builder;
     }
@@ -68,8 +77,8 @@ public static class ServiceCollectionExtensions
         builder.Services.AddAuthentication("Bearer")
             .AddJwtBearer("Bearer", options =>
             {
-                options.Authority = "http://localhost:5252";
-                options.Audience = "full.access";
+                options.Authority = "https://localhost:7138";
+                options.Audience = "vehicle.resource";
                 options.RequireHttpsMetadata = false;
             });
         builder.Services.AddAuthorization();
