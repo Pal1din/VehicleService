@@ -2,47 +2,49 @@ using Grpc.Core;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Vehicle;
+using VehicleService.API.Extensions;
 
 namespace VehicleService.API.Controllers;
 
 [Route("api/vehicles")]
 [ApiController]
-[Authorize]
 public class VehicleController(Vehicle.VehicleService.VehicleServiceClient grpcClient) : ControllerBase
 {
     [HttpGet]
     [Authorize(Policy = "CanRead")]
     public async Task<IActionResult> GetVehicles()
     {
-        return await SafelyFunction(async () => await grpcClient.ListVehiclesAsync(new Empty()));
+        return await SafelyFunction(async () => 
+            await grpcClient.ListVehiclesAsync(new Empty(), HttpContext.AddTokenToMetadata()));
     }
     
     [HttpGet("{id}")]
     [Authorize(Policy = "CanRead")]
     public async Task<IActionResult> GetVehicle(int id)
     {
-        return await SafelyFunction(async () => await grpcClient.GetVehicleAsync(new VehicleRequest { Id = id }));
+        return await SafelyFunction(async () => 
+            await grpcClient.GetVehicleAsync(new VehicleRequest { Id = id }, HttpContext.AddTokenToMetadata()));
     }
 
     [HttpPost]
     [Authorize(Policy = "CanWrite")]
     public async Task<IActionResult> CreateVehicle([FromBody] CreateVehicleRequest request)
     {
-        return await SafelyFunction(async () => await grpcClient.CreateVehicleAsync(request));
+        return await SafelyFunction(async () => await grpcClient.CreateVehicleAsync(request, HttpContext.AddTokenToMetadata()));
     }
 
     [HttpDelete]
     [Authorize(Policy = "CanWrite")]
     public async Task<IActionResult> DeleteVehicle([FromBody]int id)
     {
-        return await SafelyFunction(async () => await grpcClient.DeleteVehicleAsync(new VehicleRequest { Id = id }));
+        return await SafelyFunction(async () => await grpcClient.DeleteVehicleAsync(new VehicleRequest { Id = id }, HttpContext.AddTokenToMetadata()));
     }
 
     [HttpPut]
     [Authorize(Policy = "CanWrite")]
     public async Task<IActionResult> UpdateVehicle([FromBody] UpdateVehicleRequest request)
     {
-        return await SafelyFunction(async () => await grpcClient.UpdateVehicleAsync(request));
+        return await SafelyFunction(async () => await grpcClient.UpdateVehicleAsync(request, HttpContext.AddTokenToMetadata()));
     }
 
     private async Task<IActionResult> SafelyFunction<TResult>(Func<Task<TResult>> func)

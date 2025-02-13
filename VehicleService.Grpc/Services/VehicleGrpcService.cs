@@ -1,4 +1,5 @@
 using Grpc.Core;
+using Microsoft.AspNetCore.Authorization;
 using Vehicle;
 using VehicleService.Data.Entities;
 using VehicleService.Data.Interfaces;
@@ -7,6 +8,7 @@ namespace VehicleService.Grpc.Services;
 
 public class VehicleGrpcService(IVehicleRepository repository) : Vehicle.VehicleService.VehicleServiceBase
 {
+    [Authorize(Policy = "CanRead")]
     public override async Task<VehicleResponse> GetVehicle(VehicleRequest request, ServerCallContext context)
     {
         var vehicle = await repository.GetByIdAsync(request.Id);
@@ -23,6 +25,7 @@ public class VehicleGrpcService(IVehicleRepository repository) : Vehicle.Vehicle
         };
     }
 
+    [Authorize(Policy = "CanWrite")]
     public override async Task<VehicleResponse> CreateVehicle(CreateVehicleRequest request, ServerCallContext context)
     {
         var vehicle = new Data.Entities.VehicleEntity
@@ -45,6 +48,7 @@ public class VehicleGrpcService(IVehicleRepository repository) : Vehicle.Vehicle
         };
     }
 
+    [Authorize(Policy = "CanRead")]
     public override async Task<VehicleListResponse> ListVehicles(Empty request, ServerCallContext context)
     {
         var vehicles = await repository.GetAllAsync();
@@ -61,6 +65,7 @@ public class VehicleGrpcService(IVehicleRepository repository) : Vehicle.Vehicle
         return response;
     }
 
+    [Authorize(Policy = "CanWrite")]
     public override async Task<Empty> DeleteVehicle(VehicleRequest request, ServerCallContext context)
     {
         var success = await repository.DeleteAsync(request.Id);
@@ -68,6 +73,7 @@ public class VehicleGrpcService(IVehicleRepository repository) : Vehicle.Vehicle
         return new Empty();
     }
 
+    [Authorize(Policy = "CanWrite")]
     public override async Task<VehicleResponse> UpdateVehicle(UpdateVehicleRequest request, ServerCallContext context)
     {
         var vehicle = new VehicleEntity
@@ -80,7 +86,7 @@ public class VehicleGrpcService(IVehicleRepository repository) : Vehicle.Vehicle
             Vin = request.Vin,
         };
         var success = await repository.UpdateAsync(vehicle);
-        if(!success) throw new RpcException(new Status(StatusCode.NotFound, "Vehicle not found"));
+        if (!success) throw new RpcException(new Status(StatusCode.NotFound, "Vehicle not found"));
         return new VehicleResponse
         {
             Id = vehicle.Id,

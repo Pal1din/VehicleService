@@ -30,6 +30,7 @@ app.UseSwaggerUI(c =>
 
 app.UseHttpsRedirection(); 
 app.MapControllers();
+app.MapGrpcReflectionService();
 app.MapGrpcService<VehicleGrpcService>();
 app.Migrate();
 
