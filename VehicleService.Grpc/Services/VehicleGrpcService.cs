@@ -43,10 +43,11 @@ public class VehicleGrpcService(IVehicleRepository repository)
             Model = request.Model,
             Year = request.Year,
             Vin = request.Vin,
-            OwnerId = userId
+            OwnerId = userId,
+            OrganizationId = request.CreateOnOrganization ? GetOrganizationId(GetUserFromContext(context)) : null
         };
         var id = await repository.CreateAsync(vehicle);
-        return new VehicleResponse()
+        return new VehicleResponse
         {
             Id = id,
             Make = vehicle.Make,
@@ -62,7 +63,7 @@ public class VehicleGrpcService(IVehicleRepository repository)
     {
         var vehicles = IsAdmin(GetUserFromContext(context))
             ? await repository.GetAllAsync()
-            : await repository.GetAllAsync(GetUserId(GetUserFromContext(context)));
+            : await repository.GetAllAsync(GetUserId(GetUserFromContext(context)), GetOrganizationId(GetUserFromContext(context)));
         var response = new VehicleListResponse();
         response.Vehicles.AddRange(vehicles.Select(v => new VehicleResponse
         {
@@ -126,8 +127,9 @@ public class VehicleGrpcService(IVehicleRepository repository)
         }
 
         var userId = GetUserId(GetUserFromContext(context));
+        var organizationId = GetOrganizationId(GetUserFromContext(context));
         var vehicle = await repository.GetByIdAsync(vehicleId);
-        if (vehicle?.OwnerId != userId)
+        if (vehicle?.OwnerId != userId && vehicle?.OrganizationId != organizationId)
             throw new RpcException(new Status(StatusCode.PermissionDenied,
                 $"You are not authorized to {func.Method.Name.ToLower()} this vehicle"));
         return await func.Invoke();
@@ -135,5 +137,11 @@ public class VehicleGrpcService(IVehicleRepository repository)
 
     private ClaimsPrincipal GetUserFromContext(ServerCallContext context) => context.GetHttpContext().User;
     private int GetUserId(ClaimsPrincipal user) => int.Parse(user.FindFirst(ClaimTypes.NameIdentifier)?.Value!);
+    private int? GetOrganizationId(ClaimsPrincipal user)
+    {
+        var success = int.TryParse(user.FindFirst("organization_id")?.Value, out int organizationId);
+        return success ? organizationId : null;
+    }
+
     private bool IsAdmin(ClaimsPrincipal user) => user.IsInRole("Admin");
 }

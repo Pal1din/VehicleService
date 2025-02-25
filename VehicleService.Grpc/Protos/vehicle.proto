@@ -21,6 +21,7 @@ message CreateVehicleRequest {
   int32 year = 3;
   string vin = 4;
   string license_plate = 5;
+  bool createOnOrganization = 6;
 }
 
 message UpdateVehicleRequest {

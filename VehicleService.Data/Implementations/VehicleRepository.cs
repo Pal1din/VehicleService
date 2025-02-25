@@ -10,17 +10,28 @@ public class VehicleRepository(DatabaseConnectionFactory connectionFactory, Redi
 {
     private const string CachePrefix = "vehicle:";
 
-    public async Task<IEnumerable<VehicleEntity>> GetAllAsync(int? userId)
+    public async Task<IEnumerable<VehicleEntity>> GetAllAsync(int? userId, int? organizationId)
     {
         Log.Information("Получение всех автомобилей");   
         var sql = "SELECT id, make, model, year, vin, license_plate as LicensePlate FROM vehicles";
         var parameters = new DynamicParameters();
+        var conditions = new List<string>();
 
-        // Если передан идентификатор пользователя, добавляем условие WHERE
         if (userId.HasValue)
         {
-            sql += " WHERE owner_id = @UserId";
+            conditions.Add("owner_id = @UserId");
             parameters.Add("UserId", userId.Value);
+        }
+
+        if (organizationId.HasValue)
+        {
+            conditions.Add("organization_id = @OrganizationId");
+            parameters.Add("OrganizationId", organizationId.Value);
+        }
+
+        if (conditions.Any())
+        {
+            sql += " WHERE " + string.Join(" OR ", conditions);
         }
 
         using var connection = connectionFactory.CreateConnection();
@@ -58,8 +69,8 @@ public class VehicleRepository(DatabaseConnectionFactory connectionFactory, Redi
         Log.Information("Созднаие автомобиля"); 
         using var connection = connectionFactory.CreateConnection();
         var query = """
-                            INSERT INTO vehicles (make, model, year, vin, license_plate, owner_id)
-                            VALUES (@Make, @Model, @Year, @Vin, @LicensePlate, @OwnerId)
+                            INSERT INTO vehicles (make, model, year, vin, license_plate, owner_id, organization_id)
+                            VALUES (@Make, @Model, @Year, @Vin, @LicensePlate, @OwnerId, @OrganizationId)
                             RETURNING id;
                     """;
         return await connection.ExecuteScalarAsync<int>(query, vehicleEntity);

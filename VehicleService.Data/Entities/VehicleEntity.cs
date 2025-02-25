@@ -9,4 +9,5 @@ public class VehicleEntity: BaseEntity
     public string Vin { get; set; }
     public string LicensePlate { get; set; }
     public int OwnerId { get; init; }
+    public int? OrganizationId { get; set; }
 }
