@@ -17,6 +17,16 @@ builder.Services.AddOpenTelemetry()
     .WithMetrics(metrics => metrics
         .AddAspNetCoreInstrumentation()
         .AddPrometheusExporter());
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowLocalhost5173", policy =>
+    {
+        policy.WithOrigins("http://localhost:5173")
+            .AllowAnyHeader()
+            .AllowAnyMethod();
+    });
+});
+
 
 Log.Logger = new LoggerConfiguration()
     .ReadFrom.Configuration(builder.Configuration)
@@ -37,6 +47,7 @@ builder
     .AddAuthService(authenticationSettings!);
 
 var app = builder.Build();
+app.UseCors("AllowLocalhost5173");
 app.MapPrometheusScrapingEndpoint();
 app.UseSerilogRequestLogging();
 app.UseRouting();
@@ -54,7 +65,7 @@ app.UseSwaggerUI(c =>
 app.UseHttpsRedirection(); 
 app.MapControllers();
 app.MapGrpcReflectionService();
-app.MapGrpcService<VehicleGrpcService>();
+app.MapGrpcService<VehicleGrpcService>().EnableGrpcWeb();
 app.Migrate();
 
 app.Run();

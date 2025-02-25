@@ -33,9 +33,9 @@ public class VehicleController(Vehicle.VehicleService.VehicleServiceClient grpcC
         return await SafelyFunction(async () => await grpcClient.CreateVehicleAsync(request, HttpContext.AddTokenToMetadata()));
     }
 
-    [HttpDelete]
+    [HttpDelete("{id}")]
     [Authorize(Policy = "CanWrite")]
-    public async Task<IActionResult> DeleteVehicle([FromBody]int id)
+    public async Task<IActionResult> DeleteVehicle(int id)
     {
         return await SafelyFunction(async () => await grpcClient.DeleteVehicleAsync(new VehicleRequest { Id = id }, HttpContext.AddTokenToMetadata()));
     }

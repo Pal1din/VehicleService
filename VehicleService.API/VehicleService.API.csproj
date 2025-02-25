@@ -10,6 +10,7 @@
     <ItemGroup>
         <PackageReference Include="FluentMigrator.Runner.Core" Version="6.2.0" />
         <PackageReference Include="FluentMigrator.Runner.Postgres" Version="6.2.0" />
+        <PackageReference Include="Grpc.AspNetCore.Web" Version="2.67.0" />
         <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.13" />
         <PackageReference Include="OpenTelemetry.Exporter.Prometheus.AspNetCore" Version="1.11.0-beta.1" />
         <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.11.1" />
