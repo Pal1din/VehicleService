@@ -63,6 +63,7 @@ public class VehicleController(Vehicle.VehicleService.VehicleServiceClient grpcC
             return e.StatusCode switch
             {
                 global::Grpc.Core.StatusCode.NotFound => NotFound(e.Message),
+                global::Grpc.Core.StatusCode.PermissionDenied => Forbid(),
                 _ => StatusCode(500, e.Message),
             };
         }

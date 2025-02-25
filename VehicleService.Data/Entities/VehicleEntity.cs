@@ -8,4 +8,5 @@ public class VehicleEntity: BaseEntity
     public int Year { get; set; }
     public string Vin { get; set; }
     public string LicensePlate { get; set; }
+    public int OwnerId { get; init; }
 }

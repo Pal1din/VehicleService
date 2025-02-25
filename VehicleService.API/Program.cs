@@ -44,7 +44,8 @@ builder
     .AddMigrator()
     .AddApplicationServices()
     .AddData()
-    .AddAuthService(authenticationSettings!);
+    .AddAuthService(authenticationSettings);
+builder.Services.AddHttpContextAccessor();
 
 var app = builder.Build();
 app.UseCors("AllowLocalhost5173");

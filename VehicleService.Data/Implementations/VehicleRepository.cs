@@ -10,12 +10,22 @@ public class VehicleRepository(DatabaseConnectionFactory connectionFactory, Redi
 {
     private const string CachePrefix = "vehicle:";
 
-    public async Task<IEnumerable<VehicleEntity>> GetAllAsync()
+    public async Task<IEnumerable<VehicleEntity>> GetAllAsync(int? userId)
     {
-        Log.Information("Получение всех автомобилей");      
+        Log.Information("Получение всех автомобилей");   
+        var sql = "SELECT id, make, model, year, vin, license_plate as LicensePlate FROM vehicles";
+        var parameters = new DynamicParameters();
+
+        // Если передан идентификатор пользователя, добавляем условие WHERE
+        if (userId.HasValue)
+        {
+            sql += " WHERE owner_id = @UserId";
+            parameters.Add("UserId", userId.Value);
+        }
+
         using var connection = connectionFactory.CreateConnection();
-        return await connection.QueryAsync<VehicleEntity>(
-            "SELECT id, make, model, year, vin, license_plate as LicensePlate FROM vehicles");
+        
+        return await connection.QueryAsync<VehicleEntity>(sql, parameters);
     }
 
     public async Task<VehicleEntity?> GetByIdAsync(int id)
@@ -31,7 +41,7 @@ public class VehicleRepository(DatabaseConnectionFactory connectionFactory, Redi
 
         using var connection = connectionFactory.CreateConnection();
         var vehicle = await connection.QuerySingleOrDefaultAsync<VehicleEntity>(
-            "SELECT id, make, model, year, vin, license_plate as LicensePlate FROM vehicles WHERE id = @Id",
+            "SELECT id, make, model, year, vin, license_plate as LicensePlate, owner_id as OwnerId FROM vehicles WHERE id = @Id",
             new { Id = id });
 
         if (vehicle != null)
@@ -48,8 +58,8 @@ public class VehicleRepository(DatabaseConnectionFactory connectionFactory, Redi
         Log.Information("Созднаие автомобиля"); 
         using var connection = connectionFactory.CreateConnection();
         var query = """
-                            INSERT INTO vehicles (make, model, year, vin, license_plate)
-                            VALUES (@Make, @Model, @Year, @Vin, @LicensePlate)
+                            INSERT INTO vehicles (make, model, year, vin, license_plate, owner_id)
+                            VALUES (@Make, @Model, @Year, @Vin, @LicensePlate, @OwnerId)
                             RETURNING id;
                     """;
         return await connection.ExecuteScalarAsync<int>(query, vehicleEntity);
