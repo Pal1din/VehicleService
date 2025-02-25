@@ -92,9 +92,6 @@ public static class ServiceCollectionExtensions
                 options.AddPolicy(policyOptions.Name, policy => policy.RequireAssertion(context => 
                     policyOptions.Claims.TrueForAll(c => context.User.HasClaim(c.Type, c.Value))));
             }
-            
-            // options.AddPolicy("CanWrite", policy => policy.RequireAssertion(context => 
-            //     context.User.HasClaim("scope", "write") && context.User.HasClaim("permission", "write")));
         });
         return builder;
     }
