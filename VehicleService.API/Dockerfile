@@ -1,4 +1,5 @@
 ﻿FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
+RUN apt update && apt install -y net-tools && apt install -y curl
 ENV ASPNETCORE_URLS=http://+:80
 USER $APP_UID
 WORKDIR /app

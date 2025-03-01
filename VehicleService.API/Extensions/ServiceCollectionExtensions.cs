@@ -1,4 +1,5 @@
 using FluentMigrator.Runner;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using StackExchange.Redis;
 using VehicleService.Data;
@@ -24,8 +25,8 @@ public static class ServiceCollectionExtensions
                 {
                     AuthorizationCode = new OpenApiOAuthFlow
                     {
-                        AuthorizationUrl = new Uri("https://localhost:7138/connect/authorize"),
-                        TokenUrl = new Uri("https://localhost:7138/connect/token"),
+                        AuthorizationUrl = new Uri("https://45.91.238.163:8080/connect/authorize"),
+                        TokenUrl = new Uri("https://45.91.238.163:8080/connect/token"),
                         Scopes = new Dictionary<string, string>
                         {
                             {"read", "Доступ на чтение"},
@@ -43,7 +44,10 @@ public static class ServiceCollectionExtensions
                         {
                             Type = ReferenceType.SecurityScheme,
                             Id = "oauth2"
-                        }
+                        },
+                        Type = SecuritySchemeType.OAuth2,
+                        Scheme = "oauth2",
+                        
                     }, ["read", "write"]
                 }
             });
@@ -84,6 +88,17 @@ public static class ServiceCollectionExtensions
                 options.Authority = authSettings.TokenOptions.Authority;
                 options.Audience = authSettings.TokenOptions.Audience;
                 options.RequireHttpsMetadata = authSettings.TokenOptions.RequireHttpsMetadata;
+                if (builder.Environment.IsDevelopment())
+                {
+                    options.BackchannelHttpHandler = new HttpClientHandler
+                    {
+                        ServerCertificateCustomValidationCallback = (_, _, _, _) => true
+                    };
+                }
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = false,
+                };
             });
         builder.Services.AddAuthorization(options =>
         {
