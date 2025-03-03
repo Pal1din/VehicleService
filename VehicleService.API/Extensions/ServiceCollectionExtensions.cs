@@ -1,6 +1,9 @@
 using FluentMigrator.Runner;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Trace;
+using Serilog;
 using StackExchange.Redis;
 using VehicleService.Data;
 using VehicleService.Data.Implementations;
@@ -11,6 +14,49 @@ namespace VehicleService.API.Extensions;
 
 public static class ServiceCollectionExtensions
 {
+    internal static WebApplicationBuilder AddTelemetryMetrics(this WebApplicationBuilder builder)
+    {
+        builder.Services.AddOpenTelemetry()
+            .WithTracing(tracing => tracing
+                .AddAspNetCoreInstrumentation()
+                .AddHttpClientInstrumentation()
+                .AddSource("VehicleService")
+                .SetSampler(new AlwaysOnSampler()))
+            .WithMetrics(metrics => metrics
+                .AddAspNetCoreInstrumentation()
+                .AddPrometheusExporter());
+        return builder;
+    }
+
+    internal static WebApplicationBuilder ConfigureSerilog(this WebApplicationBuilder builder)
+    {
+        Log.Logger = new LoggerConfiguration()
+            .ReadFrom.Configuration(builder.Configuration)
+            .CreateBootstrapLogger();
+        builder.Host.UseSerilog();
+        return builder;
+    }
+    internal static WebApplicationBuilder AddDefault(this WebApplicationBuilder builder)
+    {
+        builder.Services.AddEndpointsApiExplorer()
+            .AddHttpContextAccessor()
+            .AddControllers();
+        return builder;
+    }
+
+    internal static WebApplicationBuilder AddApplicationCors(this WebApplicationBuilder builder)
+    {
+        builder.Services.AddCors(options =>
+        {
+            options.AddPolicy("AllowLocalhost5173", policy =>
+            {
+                policy.WithOrigins("http://localhost:5173")
+                    .AllowAnyHeader()
+                    .AllowAnyMethod();
+            });
+        });
+        return builder;
+    }
     public static WebApplicationBuilder AddSwagger(this WebApplicationBuilder builder)
     {
         builder.Services.AddSwaggerGen(o =>
@@ -67,12 +113,17 @@ public static class ServiceCollectionExtensions
         return builder;
     }
     
-    public static WebApplicationBuilder AddData(this WebApplicationBuilder builder)
+    internal static WebApplicationBuilder AddDbContext(this WebApplicationBuilder builder)
     {
         builder.Services.AddSingleton<DatabaseConnectionFactory>();
-        builder.Services.AddScoped<IVehicleRepository, VehicleRepository>();
         builder.Services.AddSingleton<IConnectionMultiplexer>(ConnectionMultiplexer.Connect(builder.Configuration.GetConnectionString("Redis")!));
         builder.Services.AddSingleton<RedisCacheService>();
+        return builder;
+    }
+
+    internal static WebApplicationBuilder AddRepositories(this WebApplicationBuilder builder)
+    {
+        builder.Services.AddScoped<IVehicleRepository, VehicleRepository>();
         return builder;
     }
     public static WebApplicationBuilder AddApplicationServices(this WebApplicationBuilder builder)
@@ -80,8 +131,9 @@ public static class ServiceCollectionExtensions
         return builder;
     }
 
-    internal static WebApplicationBuilder AddAuthService(this WebApplicationBuilder builder, AuthenticationSettings authSettings)
+    internal static WebApplicationBuilder AddAuthService(this WebApplicationBuilder builder, IConfigurationSection section)
     {
+        var authSettings = section.Get<AuthenticationSettings>()!;
         builder.Services.AddAuthentication(authSettings.TokenOptions.Scheme)
             .AddJwtBearer(authSettings.TokenOptions.Scheme, options =>
             {

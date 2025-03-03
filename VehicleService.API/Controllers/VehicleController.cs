@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Vehicle;
 using VehicleService.API.Extensions;
+using VehicleService.Grpc;
 
 namespace VehicleService.API.Controllers;
 
