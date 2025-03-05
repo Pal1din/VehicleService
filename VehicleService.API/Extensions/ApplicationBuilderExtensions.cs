@@ -6,11 +6,15 @@ namespace VehicleService.API.Extensions;
 
 public static class ApplicationBuilderExtensions
 {
-    internal static WebApplication ConfigureApplication(this WebApplication app,
-        IConfigurationSection configurationSection)
+    internal static WebApplication ConfigureApplication(this WebApplication app)
     {
-        var swaggerUiSettings = configurationSection.Get<SwaggerUISettings>();
-        app.UseCors("AllowLocalhost5173");
+        var swaggerUiSettings = app.Configuration.GetSection("SwaggerUi").Get<SwaggerUISettings>();
+        app.UseCors(builder =>
+        {
+            builder.AllowAnyOrigin()
+                .AllowAnyMethod()
+                .AllowAnyHeader();
+        });
         app.MapPrometheusScrapingEndpoint();
         app.UseSerilogRequestLogging();
         app.UseRouting();

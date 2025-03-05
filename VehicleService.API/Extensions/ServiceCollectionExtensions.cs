@@ -46,23 +46,28 @@ public static class ServiceCollectionExtensions
 
     internal static WebApplicationBuilder AddApplicationCors(this WebApplicationBuilder builder)
     {
-        builder.Services.AddCors(options =>
-        {
-            options.AddPolicy("AllowLocalhost5173", policy =>
-            {
-                policy.WithOrigins("http://localhost:5173")
-                    .AllowAnyHeader()
-                    .AllowAnyMethod();
-            });
-        });
+        // var corsSettings = builder.Configuration.GetSection("Cors").Get<List<Cors>>()!;
+        // builder.Services.AddCors(options =>
+        // {
+        //     corsSettings.ForEach(cors =>
+        //     {
+        //         options.AddPolicy(cors.Name, policy =>
+        //         {
+        //             policy.WithOrigins(cors.Url)
+        //                 .AllowAnyHeader()
+        //                 .AllowAnyMethod();
+        //         });
+        //     });
+        // });
         return builder;
     }
     public static WebApplicationBuilder AddSwagger(this WebApplicationBuilder builder)
     {
+        var identityUrl = builder.Configuration.GetValue<string>("IdentityServer:TokenOptions:Authority");
         builder.Services.AddSwaggerGen(o =>
         {
             o.SwaggerDoc("v1", new OpenApiInfo { Title = "VehicleService", Version = "v1" });
-
+            
             o.AddSecurityDefinition("oauth2", new OpenApiSecurityScheme
             {
                 Type = SecuritySchemeType.OAuth2,
@@ -71,8 +76,8 @@ public static class ServiceCollectionExtensions
                 {
                     AuthorizationCode = new OpenApiOAuthFlow
                     {
-                        AuthorizationUrl = new Uri("https://45.91.238.163:8080/connect/authorize"),
-                        TokenUrl = new Uri("https://45.91.238.163:8080/connect/token"),
+                        AuthorizationUrl = new Uri($"{identityUrl}/connect/authorize"),
+                        TokenUrl = new Uri($"{identityUrl}/connect/token"),
                         Scopes = new Dictionary<string, string>
                         {
                             {"read", "Доступ на чтение"},

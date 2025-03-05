@@ -7,7 +7,7 @@ builder.ConfigureSerilog()
 .AddTelemetryMetrics()
 .AddDefault()
 .AddAuthService(builder.Configuration.GetSection("IdentityServer"))
-.AddApplicationCors()
+// .AddApplicationCors()
 .AddGrpcServices()
 .AddSwagger()
 .AddMigrator()
@@ -16,5 +16,5 @@ builder.ConfigureSerilog()
 .AddRepositories();
 
 var app = builder.Build();
-app.ConfigureApplication(app.Configuration.GetSection("SwaggerUi"));
+app.ConfigureApplication();
 await app.MigrateAndRun();
